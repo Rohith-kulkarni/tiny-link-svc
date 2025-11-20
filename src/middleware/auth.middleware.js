@@ -23,8 +23,8 @@ export function authRequired(req, res, next) {
 export function setAuthCookie(res, token) {
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,                 // <-- SECURITY FIX
-    secure: false,                  // <-- localhost uses http
-    sameSite: "lax",
+    secure: true,                  // <-- localhost uses http
+    sameSite: "none",
     path: "/",                      // <-- REQUIRED
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
