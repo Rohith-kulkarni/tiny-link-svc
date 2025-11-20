@@ -21,19 +21,20 @@ export function authRequired(req, res, next) {
 }
 
 export function setAuthCookie(res, token) {
-  const cookieOpts = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+  res.cookie(COOKIE_NAME, token, {
+    httpOnly: true,                 // <-- SECURITY FIX
+    secure: false,                  // <-- localhost uses http
     sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-  };
-  res.cookie(process.env.JWT_COOKIE_NAME || COOKIE_NAME, token, cookieOpts);
+    path: "/",                      // <-- REQUIRED
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
 }
 
 export function clearAuthCookie(res) {
-  res.clearCookie(process.env.JWT_COOKIE_NAME || COOKIE_NAME, {
+  res.clearCookie(COOKIE_NAME, {
     httpOnly: true,
+    secure: false,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    path: "/",                      // MUST MATCH
   });
 }

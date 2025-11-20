@@ -45,18 +45,18 @@ export async function createLink(req, res) {
       tries++;
     } while (tries < 5);
   }
+  const baseUrl = `${process.env.BASE_URL.replace(/\/$/, "")}/${finalCode}`;
 
   await pool.query(
-    "INSERT INTO links(code, target_url, user_id) VALUES($1,$2,$3)",
-    [finalCode, targetUrl, userId]
+    `INSERT INTO links (code, target_url, user_id, base_url, created_at)
+   VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP);`,
+    [finalCode, targetUrl, userId, baseUrl]
   );
-  res
-    .status(201)
-    .json({
-      ok: true,
-      code: finalCode,
-      shortUrl: `${process.env.BASE_URL.replace(/\/$/, "")}/${finalCode}`,
-    });
+  res.status(201).json({
+    ok: true,
+    code: finalCode,
+    shortUrl: baseUrl,
+  });
 }
 
 export async function listLinks(req, res) {
@@ -65,7 +65,7 @@ export async function listLinks(req, res) {
     return res.status(401).json({ error: "Authentication required" });
 
   const result = await pool.query(
-    "SELECT code, target_url, clicks, last_clicked, created_at FROM links WHERE user_id=$1 ORDER BY created_at DESC",
+    "SELECT code, target_url, clicks, last_clicked, created_at, base_url FROM links WHERE user_id=$1 ORDER BY created_at DESC",
     [userId]
   );
   res.json(result.rows);
@@ -77,6 +77,7 @@ export async function getLinkStats(req, res) {
     "SELECT code, target_url, clicks, last_clicked, created_at FROM links WHERE code=$1",
     [code]
   );
+  console.log(result);
   if (result.rowCount === 0)
     return res.status(404).json({ error: "Not found" });
   res.json(result.rows[0]);
@@ -95,4 +96,35 @@ export async function deleteLink(req, res) {
   if (result.rowCount === 0)
     return res.status(404).json({ error: "Not found or not owned by user" });
   res.json({ ok: true });
+}
+
+export async function getDailyClicks(req, res) {
+  const { code } = req.params;
+
+  const result = await pool.query(
+    `SELECT date_trunc('day', clicked_at) AS day,
+            COUNT(*) AS clicks
+     FROM link_clicks
+     WHERE code = $1
+     GROUP BY day
+     ORDER BY day`,
+    [code]
+  );
+  res.json(result.rows);
+}
+
+export async function getHourlyClicks(req, res) {
+  const { code } = req.params;
+
+  const result = await pool.query(
+    `SELECT date_trunc('hour', clicked_at) AS hour,
+            COUNT(*) AS clicks
+     FROM link_clicks
+     WHERE code = $1
+     GROUP BY hour
+     ORDER BY hour`,
+    [code]
+  );
+
+  res.json(result.rows);
 }

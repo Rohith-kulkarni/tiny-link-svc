@@ -9,6 +9,7 @@ export async function redirectHandler(req, res) {
   if (result.rowCount === 0) return res.status(404).send("Not found");
 
   const link = result.rows[0];
+  await pool.query("INSERT INTO link_clicks (code) VALUES($1)", [code]);
   await pool.query(
     "UPDATE links SET clicks = clicks + 1, last_clicked = NOW() WHERE code=$1",
     [code]

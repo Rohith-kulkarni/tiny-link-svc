@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import path from "path";
+import cors from "cors";
 import { fileURLToPath } from "url";
 
 import authRouter from "./routes/auth.js";
@@ -19,6 +20,12 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(
+  cors({
+    origin: "http://localhost:3001",
+    credentials: true,
+  })
+);
 
 // Serve static frontend
 app.use(express.static(path.join(__dirname, "public")));
