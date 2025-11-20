@@ -33,8 +33,8 @@ export function setAuthCookie(res, token) {
 export function clearAuthCookie(res) {
   res.clearCookie(COOKIE_NAME, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: true,
+    sameSite: "none",
     path: "/",                      // MUST MATCH
   });
 }
