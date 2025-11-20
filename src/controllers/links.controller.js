@@ -117,7 +117,7 @@ export async function getHourlyClicks(req, res) {
   const { code } = req.params;
 
   const result = await pool.query(
-    `SELECT date_trunc('hour', clicked_at) AS hour,
+    `SELECT date_trunc('hour', clicked_at AT TIME ZONE 'Asia/Kolkata') AS hour,
             COUNT(*) AS clicks
      FROM link_clicks
      WHERE code = $1
